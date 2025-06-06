@@ -1,5 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Test Webpage</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      transition: background-color 0.5s;
+      padding: 20px;
+    }
+    #display {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    #emoji {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
 <body>
+  <div id="emoji"></div>
+  <div id="display"></div>
+  <input id="textInput" type="text" placeholder="Enter text">
+  <button id="submitBtn">Submit</button>
 
-  <head>Test Webpage</head>
-  <body>Hello World!</body>
+  <script>
+    const emojiMap = {
+      love: {emoji: '❤️', color: '#ff8080'},
+      happy: {emoji: '😊', color: '#ffff99'},
+      sad: {emoji: '😢', color: '#99ccff'},
+      cat: {emoji: '🐱', color: '#ffcc99'},
+      dog: {emoji: '🐶', color: '#cc9966'}
+    };
+
+    function chooseEmoji(text) {
+      text = text.toLowerCase();
+      for (const key in emojiMap) {
+        if (text.includes(key)) {
+          return emojiMap[key];
+        }
+      }
+      return {emoji: '💬', color: '#dddddd'};
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const text = document.getElementById('textInput').value;
+      document.getElementById('display').textContent = text;
+      const {emoji, color} = chooseEmoji(text);
+      document.getElementById('emoji').textContent = emoji;
+      document.body.style.backgroundColor = color;
+    });
+  </script>
 </body>
+</html>
