@@ -1,5 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Test Webpage</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+    #bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      filter: blur(10px);
+      transition: background-color 0.5s;
+    }
+    #display {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    #emoji {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 20px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sentiment@5.0.1/build/sentiment.min.js"></script>
+</head>
 <body>
+  <div id="bg"></div>
+  <div id="emoji"></div>
+  <div id="display"></div>
+  <input id="textInput" type="text" placeholder="Enter text">
+  <button id="submitBtn">Submit</button>
 
-  <head>Test Webpage</head>
-  <body>Hello World!</body>
+  <script>
+    // Larger emoji library with keywords for basic intent detection
+    const emojiLibrary = [
+      {emoji: '😀', keywords: ['happy','smile','grin','joy']},
+      {emoji: '😂', keywords: ['laugh','lol','funny']},
+      {emoji: '😊', keywords: ['blush','cheerful','pleased']},
+      {emoji: '😢', keywords: ['sad','cry','tear','unhappy']},
+      {emoji: '😡', keywords: ['angry','mad','furious']},
+      {emoji: '😍', keywords: ['love','heart','adore']},
+      {emoji: '😎', keywords: ['cool','sunglasses','chill']},
+      {emoji: '😇', keywords: ['angel','good','innocent']},
+      {emoji: '🤔', keywords: ['think','question','hmm']},
+      {emoji: '😴', keywords: ['sleep','tired','zzz']},
+      {emoji: '🤢', keywords: ['sick','nausea','ill']},
+      {emoji: '🤖', keywords: ['robot','ai','machine']},
+      {emoji: '🎉', keywords: ['party','celebrate','yay']},
+      {emoji: '🎂', keywords: ['birthday','cake','celebration']},
+      {emoji: '💻', keywords: ['computer','coding','laptop']},
+      {emoji: '🐱', keywords: ['cat','kitty']},
+      {emoji: '🐶', keywords: ['dog','puppy']},
+      {emoji: '🌧️', keywords: ['rain','storm','wet']},
+      {emoji: '☀️', keywords: ['sun','sunny','bright']},
+      {emoji: '🍕', keywords: ['pizza','food','eat']},
+      // fall back emoji
+      {emoji: '💬', keywords: []}
+    ];
+
+    function chooseEmoji(text) {
+      const words = text.toLowerCase().split(/\W+/);
+      let bestEmoji = '💬';
+      let bestScore = 0;
+      for (const item of emojiLibrary) {
+        let score = 0;
+        for (const w of words) {
+          if (item.keywords.includes(w)) score++;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestEmoji = item.emoji;
+        }
+      }
+      if (bestScore === 0 && window.Sentiment) {
+        const sentiment = new Sentiment();
+        const result = sentiment.analyze(text);
+        if (result.score > 1) return '😊';
+        if (result.score < -1) return '😢';
+        return '😐';
+      }
+      return bestEmoji;
+    }
+
+    function averageColorFromEmoji(emoji) {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      ctx.font = '64px serif';
+      ctx.fillText(emoji, 0, 64);
+      const data = ctx.getImageData(0, 0, 64, 64).data;
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] > 0) {
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+          count++;
+        }
+      }
+      if (count === 0) return '#ffffff';
+      r = Math.round(r / count);
+      g = Math.round(g / count);
+      b = Math.round(b / count);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const text = document.getElementById('textInput').value.trim();
+      document.getElementById('display').textContent = text;
+      const emoji = chooseEmoji(text);
+      document.getElementById('emoji').textContent = emoji;
+      document.getElementById('bg').style.backgroundColor = averageColorFromEmoji(emoji);
+    });
+  </script>
 </body>
+</html>
